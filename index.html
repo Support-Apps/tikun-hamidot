@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תיקון המידות - מסע של 42 יום</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: #fff5f7;
+            color: #2d1b2e;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        body.dark-mode {
+            background: #1a1625;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #f48fb1;
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: 700;
+            font-family: 'Varela Round', sans-serif;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #8b7f8e;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-family: 'Amatic SC', cursive;
+            font-weight: 700;
+        }
+        body.dark-mode .subtitle {
+            color: #b8a5c9;
+        }
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .control-btn, .date-box {
+            background: white;
+            border: 2px solid #98d8c8;
+            border-radius: 10px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            justify-content: center;
+            color: #2d1b2e;
+            font-family: 'Heebo', sans-serif;
+        }
+        body.dark-mode .control-btn,
+        body.dark-mode .date-box {
+            background: #2a2435;
+            border-color: #4a4055;
+            color: white;
+        }
+        .date-box {
+            flex-direction: row;
+            align-items: center;
+            padding: 8px 10px;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        .tab {
+            background: white;
+            border: 2px solid #ffe4e9;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            color: #8b7f8e;
+            font-family: 'Heebo', sans-serif;
+        }
+        body.dark-mode .tab {
+            background: #2a2435;
+            border-color: #4a4055;
+            color: #b8a5c9;
+        }
+        .tab.active {
+            background: #98d8c8;
+            border-color: #98d8c8;
+            color: white;
+        }
+        .whatsapp-btn {
+            background: transparent;
+            color: #25D366;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            font-size: 1.8em;
+            display: inline-flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .whatsapp-btn:hover {
+            transform: scale(1.2);
+        }
+        .email-btn {
+            background: transparent;
+            color: #EA4335;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            font-size: 1.8em;
+            display: inline-flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .email-btn:hover {
+            transform: scale(1.2);
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+            z-index: 10000;
+        }
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        .firework {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            animation: firework-burst 1s ease-out forwards;
+            z-index: 10000;
+        }
+        @keyframes firework-burst {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--x), var(--y));
+            }
+        }
+        .card {
+            background: white;
+            border: 2px solid #ffe4e9;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        body.dark-mode .card {
+            background: #2a2435;
+            border-color: #4a4055;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        .stat-number.completed { color: #98d8c8; }
+        .stat-number.streak { color: #f48fb1; }
+        .stat-number.percent { color: #d4af37; }
+        .stat-label {
+            font-size: 0.8em;
+            color: #8b7f8e;
+        }
+        body.dark-mode .stat-label {
+            color: #b8a5c9;
+        }
+        .progress-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+            gap: 8px;
+            margin: 30px 0 20px 0;
+            position: relative;
+            overflow: visible;
+            padding: 10px;
+        }
+        .day-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid #ffe4e9;
+            background: white;
+            position: relative;
+            color: #8b7f8e;
+        }
+        body.dark-mode .day-circle {
+            background: #2a2435;
+            border-color: #4a4055;
+            color: #b8a5c9;
+        }
+        .day-circle.completed {
+            background: #98d8c8;
+            color: white;
+            border-color: #98d8c8;
+        }
+        .day-circle.current {
+            border: 3px solid #d4af37;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+        .tooltip {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 2px solid #ffe4e9;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 200px;
+            max-width: 250px;
+            display: none;
+            pointer-events: none;
+            white-space: normal;
+        }
+        
+        /* Fix tooltip overflow on mobile */
+        @media (max-width: 768px) {
+            .tooltip {
+                position: fixed;
+                bottom: auto;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-width: 90vw;
+                min-width: auto;
+                width: 280px;
+            }
+        }
+        
+        body.dark-mode .tooltip {
+            background: #1a1625;
+            border-color: #4a4055;
+            color: white;
+        }
+        .day-circle:hover .tooltip {
+            display: block;
+        }
+        .middot-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .middah-box {
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid;
+            background: white;
+        }
+        body.dark-mode .middah-box {
+            background: #2a2435;
+        }
+        .middah-box.avoid {
+            border-color: #ffb3c1;
+        }
+        .middah-box.do-good {
+            border-color: #98d8c8;
+        }
+        .middah-label {
+            display: inline-block;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .middah-label.avoid {
+            background: #ffb3c1;
+        }
+        .middah-label.do-good {
+            background: #98d8c8;
+        }
+        .middah-text {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #2d1b2e;
+            margin-bottom: 10px;
+        }
+        body.dark-mode .middah-text {
+            color: white;
+        }
+        .example-text {
+            font-size: 0.9em;
+            color: #8b7f8e;
+            font-style: italic;
+            margin-top: 8px;
+        }
+        .reflection-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff5f7;
+            border-radius: 10px;
+            border: 2px solid #ffe4e9;
+        }
+        body.dark-mode .reflection-box {
+            background: #1a1625;
+            border-color: #4a4055;
+        }
+        .reflection-box textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 2px solid #ffe4e9;
+            border-radius: 8px;
+            font-family: 'Heebo', sans-serif;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        body.dark-mode .reflection-box textarea {
+            background: #2a2435;
+            border-color: #4a4055;
+            color: white;
+        }
+        .save-btn {
+            background: #98d8c8;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            width: 100%;
+            margin-top: 20px;
+            font-family: 'Heebo', sans-serif;
+        }
+        .save-btn:hover {
+            opacity: 0.9;
+        }
+        .save-btn.secondary {
+            background: #d4af37;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 3px solid #f48fb1;
+            position: relative;
+        }
+        body.dark-mode .modal-content {
+            background: #1a1625;
+            color: white;
+        }
+        .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ffe4e9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #8b7f8e;
+        }
+        body.dark-mode .close-btn {
+            background: #4a4055;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #8b7f8e;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ffe4e9;
+            border-radius: 8px;
+            font-family: 'Heebo', sans-serif;
+            font-size: 0.9em;
+        }
+        body.dark-mode .form-group input {
+            background: #2a2435;
+            border-color: #4a4055;
+            color: white;
+        }
+        .family-list, .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .family-card, .contact-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #98d8c8;
+            position: relative;
+        }
+        body.dark-mode .family-card,
+        body.dark-mode .contact-card {
+            background: #2a2435;
+            border-color: #4a4055;
+        }
+        .family-card h3, .contact-card h3 {
+            color: #98d8c8;
+            margin-bottom: 10px;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ffb3c1;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: white;
+            font-size: 1em;
+        }
+        .add-btn {
+            background: #d4af37;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            width: 100%;
+            font-family: 'Heebo', sans-serif;
+        }
+        .challenge-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ffe4e9;
+        }
+        body.dark-mode .challenge-card {
+            background: #2a2435;
+            border-color: #4a4055;
+        }
+        .challenge-card h3 {
+            margin-bottom: 10px;
+        }
+        .challenge-card.joined {
+            border-color: #98d8c8;
+            background: #f0faf8;
+        }
+        body.dark-mode .challenge-card.joined {
+            background: #1a2625;
+        }
+        .history-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #98d8c8;
+        }
+        body.dark-mode .history-item {
+            background: #2a2435;
+            border-color: #4a4055;
+        }
+        .progress-bar {
+            height: 10px;
+            background: #ffe4e9;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffb3c1, #98d8c8);
+            transition: width 0.5s ease;
+        }
+        .share-btn {
+            background: #f48fb1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-family: 'Heebo', sans-serif;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .insight-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ffe4e9;
+            text-align: center;
+        }
+        body.dark-mode .insight-card {
+            background: #2a2435;
+            border-color: #4a4055;
+        }
+        .insight-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #f48fb1;
+            margin-bottom: 10px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #8b7f8e;
+        }
+        
+        /* Mobile responsive fixes */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .card {
+                padding: 15px;
+                margin: 10px 0;
+            }
+            
+            #visual-spiral {
+                width: 100%;
+                max-width: 100%;
+                padding: 10px;
+            }
+            
+            .save-btn {
+                font-size: 0.9em;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>תִּיקּוּן הַמִּידּוֹת</h1>
+        <p class="subtitle">אלה מסעי בני ישראל</p>
+
+        <div class="controls">
+            <div class="date-box" onclick="editHebrewDate()">
+                <input type="text" id="hebrew-date-picker" class="date-value" style="border: none; background: transparent; font-weight: 600; font-size: 0.95em; cursor: pointer; width: 100%; text-align: center; font-family: 'Heebo', sans-serif;" value="י״ט בכסלו">
+            </div>
+            <div class="date-box">
+                <input type="date" id="gregorian-date-picker" class="date-value" value="2025-12-10" style="border: none; background: transparent; font-weight: 600; font-size: 0.95em; cursor: pointer; width: 100%; text-align: center; font-family: 'Heebo', sans-serif;">
+            </div>
+            <button class="control-btn" onclick="toggleDarkMode()">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-text">כהה</span>
+            </button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('journey')">🎯 מסע</button>
+            <button class="tab" onclick="showTab('community')">👥 קהילה</button>
+            <button class="tab" onclick="showTab('family')">❤️ משפחה</button>
+            <button class="tab" onclick="showTab('insights')">📈 תובנות</button>
+            <button class="tab" onclick="showTab('visual')">🗺️ מסע ויזואלי</button>
+            <button class="tab" onclick="showTab('history')">📖 הסטוריה</button>
+        </div>
+
+        <div id="journey-tab" class="card">
+            <h2 style="color: #f48fb1; margin-bottom: 20px; text-align: center; font-weight: 700;">
+                יום <span id="current-day-title">1</span> / 42
+            </h2>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number completed" id="completed-stat">0</div>
+                    <div class="stat-label">הושלמו</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number streak" id="streak-stat">0</div>
+                    <div class="stat-label">רצף</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number percent" id="percent-stat">0%</div>
+                    <div class="stat-label">התקדמות</div>
+                </div>
+            </div>
+
+            <div class="progress-map" id="progress-map"></div>
+
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 20px;">
+                <button onclick="previousDay()" style="background: #98d8c8; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-family: 'Heebo', sans-serif; font-size: 0.9em;">▶ יום קודם</button>
+                <button onclick="nextDay()" style="background: #98d8c8; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-family: 'Heebo', sans-serif; font-size: 0.9em;">יום הבא ◀</button>
+            </div>
+
+            <div class="middot-boxes">
+                <div class="middah-box avoid">
+                    <div class="middah-label avoid">סור מרע</div>
+                    <div class="middah-text" id="avoid-text">אכזריות, התעלמות</div>
+                    <div style="margin-top: 10px; padding: 10px; background: #fff5f7; border-radius: 8px; font-size: 0.85em; color: #8b7f8e;" id="avoid-explanation">
+                        <!-- הסבר על המידה יתווסף כאן -->
+                    </div>
+                </div>
+                <div class="middah-box do-good">
+                    <div class="middah-label do-good">ועשה טוב</div>
+                    <div class="middah-text" id="do-text">רחמנות, חסד, נושא בעול</div>
+                    <div style="margin-top: 10px; padding: 10px; background: #f0faf8; border-radius: 8px; font-size: 0.85em; color: #8b7f8e;" id="do-explanation">
+                        <!-- הסבר על המידה יתווסף כאן -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="middot-boxes">
+                <div class="middah-box avoid">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.9em;">האם הייתה מידה כזו היום? אם כן, כיצד פעלת?</label>
+                    <textarea id="avoid-reflection" placeholder="תאר את החוויה שלך..." style="width: 100%; min-height: 80px; padding: 10px; border: 2px solid #ffb3c1; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.9em; resize: vertical;"></textarea>
+                </div>
+                <div class="middah-box do-good">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.9em;">האם הייתה מידה כזו היום? אם כן, כיצד פעלת?</label>
+                    <textarea id="do-reflection" placeholder="תאר את החוויה שלך..." style="width: 100%; min-height: 80px; padding: 10px; border: 2px solid #98d8c8; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.9em; resize: vertical;"></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="save-btn" onclick="completeDay()" style="flex: 1;">שמור והמשך</button>
+                <button class="save-btn" onclick="resetDay()" style="flex: 1; background: #f48fb1;">התחל מחדש</button>
+            </div>
+        </div>
+
+        <div id="community-tab" class="card" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #f48fb1;">אתגרי קהילה</h2>
+            
+            <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #ffe4e9;">
+                <h3 style="color: #f48fb1; margin-bottom: 15px; text-align: center;">שתף את האתגרים עם חברים</h3>
+                <div id="contacts-list" class="contact-list"></div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="add-btn" onclick="openAddContactModal()" style="background: #d4af37; flex: 1;">➕ הוסף</button>
+                    <button class="add-btn" onclick="toggleEditMode()" style="background: #98d8c8; flex: 1;">✎ עריכה</button>
+                    <button class="add-btn" onclick="toggleDeleteMode()" style="background: #ffb3c1; flex: 1;">🗑️ מחק איש קשר</button>
+                </div>
+            </div>
+
+            <div class="challenge-card" id="challenge-1">
+                <h3 style="color: #98d8c8;">אתגר שמירת הלשון - 7 ימים</h3>
+                <p style="margin-bottom: 10px;">התחייבות לשבוע ללא לשון הרע</p>
+                <p style="font-size: 0.9em; color: #8b7f8e;">משתתפים: <span class="participant-count">0</span></p>
+                <button class="save-btn" onclick="joinChallenge(1)">הצטרף לאתגר</button>
+            </div>
+
+            <div class="challenge-card" id="challenge-2">
+                <h3 style="color: #d4af37;">מסע תיקון המידות המלא - 42 יום</h3>
+                <p style="margin-bottom: 10px;">המסע המלא עם הקהילה</p>
+                <p style="font-size: 0.9em; color: #8b7f8e;">משתתפים: <span class="participant-count">0</span></p>
+                <button class="save-btn" onclick="joinChallenge(2)">הצטרף לאתגר</button>
+            </div>
+
+            <div class="challenge-card" id="challenge-3">
+                <h3 style="color: #98d8c8;">אתגר הכרת הטובה - 14 יום</h3>
+                <p style="margin-bottom: 10px;">כתיבת 3 דברים שאנחנו אסירי תודה עליהם מדי יום</p>
+                <p style="font-size: 0.9em; color: #8b7f8e;">משתתפים: <span class="participant-count">0</span></p>
+                <button class="save-btn" onclick="joinChallenge(3)">הצטרף לאתגר</button>
+            </div>
+
+            <div class="challenge-card" id="challenge-4">
+                <h3 style="color: #ffb3c1;">אתגר סבלנות - 21 יום</h3>
+                <p style="margin-bottom: 10px;">תרגול סבלנות במצבים מאתגרים</p>
+                <p style="font-size: 0.9em; color: #8b7f8e;">משתתפים: <span class="participant-count">0</span></p>
+                <button class="save-btn" onclick="joinChallenge(4)">הצטרף לאתגר</button>
+            </div>
+        </div>
+
+        <div id="family-tab" class="card" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #f48fb1;">מעקב משפחתי</h2>
+            <p style="text-align: center; margin-bottom: 10px; color: #8b7f8e; font-size: 0.9em;">
+                הוסף בני משפחה ושתף איתם את המסע שלך דרך 
+                <span style="color: #25D366; font-size: 1.5em; vertical-align: middle;">
+                    <svg width="20" height="20" viewBox="0 0 32 32" fill="currentColor" style="vertical-align: middle;">
+                        <path d="M16 0C7.164 0 0 7.164 0 16c0 2.828.736 5.484 2.016 7.812L.096 30.912l7.264-1.888A15.878 15.878 0 0016 32c8.836 0 16-7.164 16-16S24.836 0 16 0zm8.124 22.876c-.344.964-1.716 1.768-2.804 2.008-.736.164-1.696.296-4.92-.996-4.124-1.648-6.788-5.808-6.988-6.076-.196-.268-1.596-2.124-1.596-4.056s1.008-2.876 1.368-3.268c.36-.392.784-.492 1.048-.492.264 0 .524.004.752.012.244.012.572-.092.896.684.328.788 1.12 2.732 1.22 2.932.1.2.164.432.032.7-.132.268-.196.432-.392.668-.196.236-.412.528-.588.708-.196.2-.4.416-.172.816.228.4.996 1.652 2.14 2.676 1.472 1.316 2.716 1.728 3.104 1.92.392.196.62.164.848-.096.228-.264.972-1.136 1.232-1.528.264-.392.524-.328.884-.196.36.132 2.288 1.08 2.68 1.276.392.196.652.296.752.46.1.164.1.944-.244 1.908z"/>
+                    </svg>
+                </span> 
+                או 
+                <span style="color: #EA4335; font-size: 1.3em; vertical-align: middle;">✉️</span>
+            </p>
+            <div id="family-list" class="family-list"></div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="add-btn" onclick="openAddFamilyModal()" style="background: #d4af37; flex: 1;">➕ הוסף</button>
+                <button class="add-btn" onclick="toggleFamilyEditMode()" style="background: #98d8c8; flex: 1;">✎ עריכה</button>
+                <button class="add-btn" onclick="toggleFamilyDeleteMode()" style="background: #ffb3c1; flex: 1;">🗑️ מחק איש קשר</button>
+            </div>
+        </div>
+
+        <div id="insights-tab" class="card" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #f48fb1;">תובנות והתקדמות</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-number" id="total-days-insight">0</div>
+                    <div class="stat-label">ימים כולל</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-number" style="color: #98d8c8;" id="current-streak-insight">0</div>
+                    <div class="stat-label">רצף נוכחי</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <h3 style="color: #f48fb1; margin-bottom: 15px;">רשימות והתבוננות</h3>
+                <div class="form-group">
+                    <label>תובנות מהמסע:</label>
+                    <textarea id="insights-notes" placeholder="כתוב כאן את התובנות והלקחים שלמדת במהלך המסע..." style="width: 100%; min-height: 100px; padding: 10px; border: 2px solid #ffe4e9; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.9em; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>שינויים שהבחנתי בעצמי:</label>
+                    <textarea id="changes-notes" placeholder="אילו שינויים חיוביים הבחנת בהתנהגות שלך..." style="width: 100%; min-height: 100px; padding: 10px; border: 2px solid #ffe4e9; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.9em; resize: vertical;"></textarea>
+                </div>
+                <button class="save-btn" onclick="saveInsightsNotes()">שמור תובנות</button>
+            </div>
+        </div>
+
+        <div id="visual-tab" class="card" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #f48fb1; font-weight: 700;">🗺️ המסע הויזואלי</h2>
+            <p style="text-align: center; color: #8b7f8e; margin-bottom: 30px;">
+                מסלול ספירלי של 42 המידות - העבר עכבר על כל נקודה לראות פרטים
+            </p>
+            
+            <div id="visual-spiral" style="position: relative; width: 100%; max-width: 600px; height: auto; aspect-ratio: 1; margin: 0 auto;">
+                <!-- Spiral will be rendered here -->
+            </div>
+            
+            <div id="visual-details" style="margin-top: 30px; padding: 20px; background: #fff5f7; border-radius: 12px; display: none;">
+                <h3 id="visual-day-title" style="color: #f48fb1; margin-bottom: 15px; text-align: center;"></h3>
+                <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                    <div style="flex: 1; padding: 15px; background: #ffebef; border-radius: 8px;">
+                        <div style="font-weight: 600; color: #f48fb1; margin-bottom: 8px;">❌ סור מרע</div>
+                        <div id="visual-avoid-text" style="font-weight: 600; color: #2d1b2e; margin-bottom: 8px;"></div>
+                        <div id="visual-avoid-explanation" style="font-size: 0.85em; color: #8b7f8e;"></div>
+                    </div>
+                    <div style="flex: 1; padding: 15px; background: #e8f5f1; border-radius: 8px;">
+                        <div style="font-weight: 600; color: #98d8c8; margin-bottom: 8px;">✅ ועשה טוב</div>
+                        <div id="visual-do-text" style="font-weight: 600; color: #2d1b2e; margin-bottom: 8px;"></div>
+                        <div id="visual-do-explanation" style="font-size: 0.85em; color: #8b7f8e;"></div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <button class="save-btn" onclick="goToDay(selectedVisualDay)">עבור ליום זה</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="history-tab" class="card" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #f48fb1;">הסטוריה</h2>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- Celebration Modal -->
+    <div id="celebration-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('celebration-modal')">×</button>
+            <div style="font-size: 3em; margin-bottom: 12px;">🎉</div>
+            <h2 style="font-size: 1.6em; margin-bottom: 10px; font-weight: 700; color: #f48fb1;">
+                כל הכבוד! סיימת את המסע!
+            </h2>
+            <p style="color: #8b7f8e; margin-bottom: 20px;">
+                עברת את כל 42 המידות בהצלחה
+            </p>
+            <button class="save-btn" onclick="viewSummary()">צפה בסיכום</button>
+            <button class="save-btn" onclick="saveToHistory()">שמור להסטוריה</button>
+            <button class="save-btn secondary" onclick="shareJourney()">שתף את המסע</button>
+            <button class="save-btn" onclick="startOver()">התחל מחדש</button>
+        </div>
+    </div>
+
+    <!-- Add Family Modal -->
+    <div id="add-family-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('add-family-modal')">×</button>
+            <h2 style="color: #f48fb1; margin-bottom: 20px;">הוסף בן משפחה</h2>
+            <div class="form-group">
+                <label>שם:</label>
+                <input type="text" id="family-name" placeholder="הכנס שם">
+            </div>
+            <div class="form-group">
+                <label>טלפון:</label>
+                <input type="tel" id="family-phone" placeholder="מספר טלפון">
+            </div>
+            <div class="form-group">
+                <label>יום נוכחי:</label>
+                <input type="number" id="family-day" min="0" max="42" value="0">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="family-permission">
+                <label for="family-permission">לאפשר שיתוף התקדמות</label>
+            </div>
+            <button class="save-btn" onclick="addFamilyMember()">הוסף</button>
+        </div>
+    </div>
+
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('add-contact-modal')">×</button>
+            <h2 style="color: #f48fb1; margin-bottom: 20px;">הוסף איש קשר</h2>
+            <div class="form-group">
+                <label>שם:</label>
+                <input type="text" id="contact-name" placeholder="הכנס שם">
+            </div>
+            <div class="form-group">
+                <label>טלפון:</label>
+                <input type="tel" id="contact-phone" placeholder="מספר טלפון">
+            </div>
+            <button class="save-btn" onclick="addContact()">הוסף</button>
+        </div>
+    </div>
+
+    <script>
+const MIDDOT_PAIRS = [
+  {day:1,avoid:{he:'אכזריות, התעלמות',en:'Cruelty'},do:{he:'רחמנות, חסד, נושא בעול',en:'Compassion'},
+   examples:{avoid:{he:'מישהו מתעלם לסבל של אחר',en:'Someone ignores another\'s suffering'},
+            do:{he:'מישהו עוזר לאחר בצרה',en:'Someone helps another in distress'}},
+   explanations:{avoid:'אכזריות היא תכונה שבה אדם גורם סבל לאחרים ללא רגש אשמה. התעלמות מצוקת הזולת היא צורה של אכזריות פסיבית.',do:'רחמנות היא היכולת להרגיש את כאב הזולת ולפעול להקלה עליו. חסד הוא מעשה טוב מתוך רצון טהור לעזור, ונשיאה בעול משמעה לשאת בצרות הזולת כאילו הן שלנו.'}},
+  {day:2,avoid:{he:'בטלה',en:'Idleness'},do:{he:'שקידה, שמירת הזמן',en:'Diligence'},
+   examples:{avoid:{he:'בזבוז זמן במקום עבודה',en:'Wasting time instead of working'},
+            do:{he:'שימוש פרודוקטיבי בזמן',en:'Using time productively'}},
+   explanations:{avoid:'בטלה היא אי ניצול הזמן והכישורים שניתנו לנו. זה כולל גם דחיינות וגם בזבוז זמן במעשים חסרי תועלת.',do:'שקידה פירושה התמדה ומסירות למשימות. שמירת הזמן היא הכרה בערכו של כל רגע והשקעתו בחוכמה.'}},
+  {day:3,avoid:{he:'בהלה',en:'Panic'},do:{he:'מנוחת הנפש ושלותה',en:'Inner Peace'},
+   examples:{avoid:{he:'שלומית ראתה כלב ונבהלה',en:'Shlomit saw a dog and panicked'},
+            do:{he:'דוד נשם עמוק והרגיע את עצמו',en:'David took a deep breath and calmed himself'}},
+   explanations:{avoid:'בהלה היא תגובה רגשית מופרזת לאתגרים, המובילה להחלטות לא מחושבות. היא גורמת לנו לאבד שליטה עצמית ופוגעת ביכולת לחשוב בבהירות.',do:'מנוחת הנפש היא יכולת לשמור על שלווה פנימית גם במצבים מאתגרים. זוהי תכונה של קור רוח, יציבות רגשית והגיבה מדודה לאירועים.'}},
+  {day:4,avoid:{he:'בלבול הדעת והחפצים',en:'Confusion'},do:{he:'סדר ומשטר',en:'Order'},
+   examples:{avoid:{he:'חוסר סדר בחדר וברעיונות',en:'Disorder in room and thoughts'},
+            do:{he:'סידור שיטתי של הדברים',en:'Systematic organization'}},
+   explanations:{avoid:'בלבול הוא מצב של אי סדר פנימי וחיצוני, חוסר ארגון במחשבות ובחפצים. זה מקשה על חשיבה צלולה, פעולה יעילה ומציאת דברים כשצריך אותם.',do:'סדר ומשטר הם ארגון שיטתי של המרחב והמחשבות. סדר מאפשר חשיבה צלולה, יעילות בפעולה, וחיסכון בזמן ובמאמץ.'}},
+  {day:5,avoid:{he:'גאוה',en:'Pride'},do:{he:'ענוה',en:'Humility'},
+   examples:{avoid:{he:'דוד התנשא על חבריו בגלל הצלחתו',en:'David acted superior due to success'},
+            do:{he:'שרה הקשיבה לאחרים והודתה על עזרתם',en:'Sarah listened and thanked others'}},
+   explanations:{avoid:'גאוה היא תחושת עליונות והתנשאות על אחרים. היא מרחיקה אנשים, חוסמת צמיחה אישית, ומונעת קבלת עזרה או ביקורת בונה.',do:'ענוה היא הכרה כנה בחוזקות ובחולשות שלנו. היא מאפשרת ללמוד מכל אדם, לקבל ביקורת, ולהעריך את תרומתם של אחרים.'}},
+  {day:6,avoid:{he:'דאגה',en:'Worry'},do:{he:'בטחון',en:'Trust'},
+   examples:{avoid:{he:'דאגה מתמדת לעתיד',en:'Constant worry about the future'},
+            do:{he:'אמונה שהכל יסתדר',en:'Faith that everything will work out'}},
+   explanations:{avoid:'דאגה היא חרדה מתמדת מהעתיד הגוזלת את השמחה בהווה. היא גורמת למתח, לחוסר שקט, ומונעת מאיתנו ליהנות מהרגע.',do:'בטחון הוא אמונה שהכל יסתדר לטובה. זו תחושת ביטחון פנימי המאפשרת לנו לחיות בשלווה ולהתמודד עם אתגרים בראש מורם.'}},
+  {day:7,avoid:{he:'הונאת ממון, גזל',en:'Fraud'},do:{he:'נקיון כפים',en:'Clean Hands'},
+   examples:{avoid:{he:'לקיחת דבר שלא שייך לי',en:'Taking what doesn\'t belong to me'},
+            do:{he:'יושר מוחלט בכסף',en:'Complete honesty with money'}},
+   explanations:{avoid:'הונאת ממון וגזל הם לקיחת כסף או רכוש שלא בצדק. זה פוגע בזולת, הורס אמון, ומשקף חוסר כבוד לקניינו של האחר.',do:'נקיון כפיים פירושו יושר מוחלט בענייני כסף. זה כולל תשלום מגיע, החזרת חוב, ואי נטילת מה שלא שייך לנו.'}},
+  {day:8,avoid:{he:'הונאת דברים, זלזול בזולת',en:'Deception'},do:{he:'כבוד הבריות',en:'Respect'},
+   examples:{avoid:{he:'דיבור בזלזול על אחרים',en:'Speaking disrespectfully of others'},
+            do:{he:'כיבוד כל אדם',en:'Respecting every person'}},
+   explanations:{avoid:'הונאת דברים וזלזול הם התנהגות מתעתעת או מזלזלת כלפי אחרים. זה פוגע בכבודם, יוצר חוסר אמון, ומשקף חוסר כבוד בסיסי.',do:'כבוד הבריות פירושו להתייחס לכל אדם בכבוד ללא קשר למעמדו. זה כולל דיבור מכבד, הקשבה אמיתית, והערכת ערכו הייחודי של כל אחד.'}},
+  {day:9,avoid:{he:'הרגל רע ומכוער',en:'Bad Habits'},do:{he:'שבירת ההרגל',en:'Breaking Habits'},
+   examples:{avoid:{he:'המשך הרגל מזיק',en:'Continuing harmful habit'},
+            do:{he:'עבודה על שינוי הרגל',en:'Working on changing habit'}},
+   explanations:{avoid:'הרגל רע הוא דפוס התנהגות מזיק שחוזר על עצמו באופן אוטומטי. הוא גורם לנזק, מקשה על צמיחה, ושולט בנו במקום שאנחנו נשלוט בו.',do:'שבירת הרגל דורשת מודעות, החלטה והתמדה. זה תהליך של זיהוי ההרגל, הבנת הטריגרים שלו, והחלפתו בהתנהגות בריאה יותר.'}},
+  {day:10,avoid:{he:'חניפות',en:'Flattery'},do:{he:'לא נושא פנים',en:'Impartiality'},
+   examples:{avoid:{he:'מחמאות מזויפות',en:'Fake compliments'},
+            do:{he:'ביקורת כנה ובונה',en:'Honest constructive criticism'}},
+   explanations:{avoid:'חניפות היא מחמאה או דברי שבח כוזבים שנועדו לרצות או למנף. היא מבוססת על אינטרס אישי ולא על כנות, והיא הורסת אמינות.',do:'לא נושא פנים פירושו להתייחס לכולם באופן שווה וצודק. זה כולל ביקורת כנה כשצריך, והימנעות מהעדפות על בסיס זהות או מעמד.'}},
+  {day:11,avoid:{he:'כף חובה',en:'Negative Judgment'},do:{he:'כף זכות',en:'Benefit of Doubt'},
+   examples:{avoid:{he:'שיפוט אחר לרעה',en:'Judging others negatively'},
+            do:{he:'מציאת הסברים חיוביים',en:'Finding positive explanations'}},
+   explanations:{avoid:'כף חובה היא שיפוט אדם לרעה מבלי לדעת את כל העובדות. זו הנחה שהכוונה הייתה רעה, והיא פוגעת ביחסים ויוצרת אווירה שלילית.',do:'כף זכות פירושה לשפוט לטובה ולמצוא הסברים חיוביים להתנהגות. זו בחירה לתת הטבה של הספק ולהאמין בטוב שבאדם.'}},
+  {day:12,avoid:{he:'כפיית טובה',en:'Ingratitude'},do:{he:'הכרת טובה',en:'Gratitude'},
+   examples:{avoid:{he:'אי הכרה בעזרה שקיבלתי',en:'Not acknowledging help received'},
+            do:{he:'תודה והערכה',en:'Thanks and appreciation'}},
+   explanations:{avoid:'כפיות טובה היא אי הכרה בעזרה שקיבלנו או התייחסות אליה כמובנת מאליה. זה פוגע במי שעזר, מרחיק אנשים, ומונע נתינה עתידית.',do:'הכרת טובה היא הערכה והוקרה לכל עזרה שקיבלנו. זה כולל תודה כנה, זכירת הטוב, ורצון להחזיר טובה בהזדמנות.'}},
+  {day:13,avoid:{he:'כעס',en:'Anger'},do:{he:'סבלנות, אורך אפיים',en:'Patience'},
+   examples:{avoid:{he:'התפרצות כעס',en:'Angry outburst'},
+            do:{he:'נשימה עמוקה ותגובה רגועה',en:'Deep breath and calm response'}},
+   explanations:{avoid:'כעס הוא תגובה רגשית אימפולסיבית שגורמת לפגיעה ביחסים. הוא מוביל להחלטות לא שקולות, דיבור פוגע, ולחרטה מאוחרת.',do:'סבלנות ואורך אפיים הם היכולת להישאר רגוע במצבים מתסכלים. זה כולל נשימה עמוקה, ספירה עד עשר, והגיבה בצורה מבוקרת ומכובדת.'}},
+  {day:14,avoid:{he:'לשון הרע ורכילות',en:'Gossip'},do:{he:'שמירת הלשון',en:'Guard Speech'},
+   examples:{avoid:{he:'דיבור שלילי על אחרים',en:'Speaking negatively about others'},
+            do:{he:'דיבור חיובי בלבד',en:'Speaking only positively'}},
+   explanations:{avoid:'לשון הרע ורכילות הם דיבור שלילי על אחרים, גם אם הוא אמת. זה פוגע בשם הטוב, הורס מוניטין, ויוצר אווירה של חוסר אמון.',do:'שמירת הלשון פירושה להימנע מדיבור שלילי ולדבר רק דברים חיוביים. זה כולל הימנעות מרכילות, הגנה על מי שמדברים עליו, ודיבור בונה.'}},
+  {day:15,avoid:{he:'לכלוך ורפש',en:'Dirt'},do:{he:'נקיון',en:'Cleanliness'},
+   examples:{avoid:{he:'חוסר ניקיון',en:'Lack of cleanliness'},
+            do:{he:'שמירה על ניקיון',en:'Maintaining cleanliness'}},
+   explanations:{avoid:'לכלוך ורפש הם חוסר טיפול בניקיון האישי והסביבתי. זה פוגע בבריאות, בכבוד העצמי, ובאופן שאחרים תופסים אותנו.',do:'נקיון הוא שמירה על סביבה נקייה ומסודרת וטיפוח היגיינה אישית. זה משפר בריאות, מעלה מצב רוח, ומכבד את עצמנו ואת הזולת.'}},
+  {day:16,avoid:{he:'לכשאפנה',en:'Procrastination'},do:{he:'חריצות',en:'Diligence'},
+   examples:{avoid:{he:'דחיית משימות',en:'Postponing tasks'},
+            do:{he:'ביצוע מיידי',en:'Immediate action'}},
+   explanations:{avoid:'לכשאפנה הוא דחיינות מתמדת והעמסת משימות לעתיד. זה מוביל לעומס, פספוס הזדמנויות, ותחושת אשם מתמדת.',do:'חריצות היא התמדה ומסירות למשימות. זה כולל התחלה מיידית, עבודה קשה, וביצוע דברים בזמן ללא דחיינות.'}},
+  {day:17,avoid:{he:'מלומדה במצוה ותפילה',en:'Rote'},do:{he:'התבוננות, מחשבה, כוונה',en:'Intention'},
+   examples:{avoid:{he:'ביצוע מכני',en:'Mechanical performance'},
+            do:{he:'ביצוע במחשבה ובכוונה',en:'Thoughtful performance'}},
+   explanations:{avoid:'מלומדה במצוה ותפילה פירושה ביצוע מכני ללא מחשבה או כוונה. זו פעולה ריקה מתוכן שלא משיגה את מטרתה האמיתית.',do:'התבוננות, מחשבה וכוונה הן השקעת מחשבה והבנה במעשינו. זה כולל ביצוע מודע, התייחסות למשמעות, ונוכחות במעשה.'}},
+  {day:18,avoid:{he:'מחלוקת',en:'Conflict'},do:{he:'שלום',en:'Peace'},
+   examples:{avoid:{he:'מריבה והתנגחות',en:'Fighting and clashing'},
+            do:{he:'חיפוש הסכמה',en:'Seeking agreement'}},
+   explanations:{avoid:'מחלוקת היא קונפליקט ומריבה מתמשכים היוצרים פילוג. זה הורס יחסים, יוצר אווירה שלילית, ומונע שיתוף פעולה.',do:'שלום פירושו חיפוש הרמוניה והסכמה. זה כולל פשרה, מציאת קרקע משותפת, ונכונות לוותר על הצדק לטובת השלום.'}},
+  {day:19,avoid:{he:'נקימה, נטירה',en:'Revenge'},do:{he:'ויתרנות, מחילה, העברה',en:'Forgiveness'},
+   examples:{avoid:{he:'שמירת כעס',en:'Holding anger'},
+            do:{he:'סליחה ומחילה',en:'Pardoning'}},
+   explanations:{avoid:'נקימה ונטירה הן שמירת כעס ורצון לנקום. זה שורף מבפנים, מונע קידמה, ושומר על כאב מהעבר חי.',do:'ויתרנות, מחילה והעברה הן היכולת לוותר על הצדק, לסלוח מהלב, ולעבור הלאה. זה משחרר אותנו מהכאב ומאפשר ריפוי.'}},
+  {day:20,avoid:{he:'נרגן-רוטן ומתלונן',en:'Complaining'},do:{he:'מרוצה ושמח בחלקו',en:'Content'},
+   examples:{avoid:{he:'תלונות מתמדות',en:'Constant complaints'},
+            do:{he:'הודיה והערכה',en:'Gratitude and appreciation'}},
+   explanations:{avoid:'נרגנות ותלונות מתמדות הן התמקדות במה שחסר או רע. זה יוצר אווירה שלילית, מרחיק אנשים, ומונע מאיתנו לראות את הטוב.',do:'שמחה וסיפוק בחלקנו הם הערכת מה שיש לנו ושמחה במצבנו. זה כולל תודה, התמקדות בחיובי, והימנעות מתלונות.'}},
+  {day:21,avoid:{he:'ניצול והכבדה',en:'Exploitation'},do:{he:'התרחקות מבקשות וניצול',en:'Independence'},
+   examples:{avoid:{he:'שימוש באנשים',en:'Using people'},
+            do:{he:'עצמאות ואחריות',en:'Independence and responsibility'}},
+   explanations:{avoid:'ניצול והכבדה הם שימוש לרעה באנשים למען אינטרס אישי. זה פוגע בהם, הורס אמון, ומשקף אנוכיות ואי התחשבות.',do:'התרחקות מניצול פירושה לא להשתמש באנשים ולכבד גבולותיהם. זה כולל עצמאות, אחריות אישית, והימנעות מהטלת נטל על אחרים.'}},
+  {day:22,avoid:{he:'ניבול פה, קללות',en:'Cursing'},do:{he:'טהרת לשון',en:'Pure Speech'},
+   examples:{avoid:{he:'שפה גסה',en:'Crude language'},
+            do:{he:'שפה נקייה',en:'Clean language'}},
+   explanations:{avoid:'ניבול פה וקללות הם שימוש בשפה גסה ופוגענית. זה פוגע באחרים, יוצר אווירה שלילית, ומשקף חוסר כבוד ושליטה עצמית.',do:'טוהר לשון פירושה שימוש בשפה נקייה, מכבדת ומעדנת. זה כולל בחירת מילים בזהירות, דיבור חיובי, והימנעות משפה פוגענית.'}},
+  {day:23,avoid:{he:'סקרנות',en:'Curiosity'},do:{he:'אי התעניינות באין תועלת',en:'Non-Interest'},
+   examples:{avoid:{he:'עניין בענייני אחרים',en:'Interest in others\' business'},
+            do:{he:'התמקדות בעניינים שלי',en:'Focus on my matters'}},
+   explanations:{avoid:'סקרנות מיותרת היא עניין בענייני אחרים שאינם רלוונטיים לנו. זו פלישה לפרטיות, בזבוז זמן, ועסק בשלא שלנו.',do:'אי התעניינות באין תועלת פירושה להתמקד בענייני עצמנו. זה כולל כבוד לפרטיות של אחרים, התמקדות בחשוב, והימנעות מרכילות.'}},
+  {day:24,avoid:{he:'עצלות',en:'Laziness'},do:{he:'זריזות',en:'Alertness'},
+   examples:{avoid:{he:'חוסר פעולה',en:'Inaction'},
+            do:{he:'פעולה מיידית',en:'Immediate action'}},
+   explanations:{avoid:'עצלות היא חוסר מוטיבציה או נכונות לעשות מאמץ. זו דחיינות, המנעות ממשימות, ואי ניצול הפוטנציאל שלנו.',do:'זריזות היא פעולה מהירה ואנרגטית. זה כולל יוזמה, התחלה מיידית של משימות, ואנרגיה בביצוע.'}},
+  {day:25,avoid:{he:'עצבות',en:'Sadness'},do:{he:'שמחה',en:'Joy'},
+   examples:{avoid:{he:'מצב רוח נמוך',en:'Low mood'},
+            do:{he:'בחירה בשמחה',en:'Choosing joy'}},
+   explanations:{avoid:'עצבות היא מצב רוח שלילי מתמשך וריחוק מאנשים. זה משפיע על האנרגיה, על היחסים, ועל איכות החיים שלנו.',do:'שמחה היא בחירה להיות שמח ומציאת אור גם בקשיים. זה כולל הכרת תודה, התמקדות בחיובי, וחגיגת הטוב בחיים.'}},
+  {day:26,avoid:{he:'עקשנות שווא',en:'Stubbornness'},do:{he:'מקבל ומודה',en:'Accepting'},
+   examples:{avoid:{he:'דבקות בטעות',en:'Sticking to error'},
+            do:{he:'הודאה והשתנות',en:'Admitting and changing'}},
+   explanations:{avoid:'עקשנות שווא היא דבקות בדעה גם כשהיא שגויה וסירוב להקשיב. זה מונע צמיחה, פוגע ביחסים, ומוביל לטעויות חוזרות.',do:'קבלה והודאה הן היכולת לקבל ביקורת ולהודות בטעויות. זה כולל פתיחות לשינוי, למידה מאחרים, ונכונות לצמוח.'}},
+  {day:27,avoid:{he:'עזות, חוצפה',en:'Audacity'},do:{he:'בושה, עדינות, נימוס',en:'Modesty'},
+   examples:{avoid:{he:'התנהגות בוטה',en:'Crude behavior'},
+            do:{he:'התנהגות מכובדת',en:'Dignified behavior'}},
+   explanations:{avoid:'עזות וחוצפה הן התנהגות חסרת כבוד וביטול גבולות. זה כולל דיבור פוגע, התנהגות בוטה, ואי התחשבות ברגשות אחרים.',do:'בושה, עדינות ונימוס הן התנהגות מכובדת ושמירה על גבולות. זה כולל התחשבות ברגשות הזולת, דיבור מכבד, וצניעות.'}},
+  {day:28,avoid:{he:'ערמימות',en:'Cunning'},do:{he:'תמימות, נאמנות',en:'Innocence'},
+   examples:{avoid:{he:'תחבולות ומניפולציות',en:'Tricks and manipulations'},
+            do:{he:'יושר פשוט',en:'Simple honesty'}},
+   explanations:{avoid:'ערמימות היא שימוש בתחבולות ומניפולציות להשגת מטרות. זו חוסר כנות, תחכום לרעה, ופגיעה באמון.',do:'תמימות ונאמנות הן יושר גמור ושקיפות. זה כולל התנהגות פשוטה וכנה, אמירת האמת, והימנעות מתחבולות.'}},
+  {day:29,avoid:{he:'עקשות',en:'Obstinacy'},do:{he:'ישרות',en:'Integrity'},
+   examples:{avoid:{he:'התעקשות מזיקה',en:'Harmful insistence'},
+            do:{he:'גמישות בשמירה על ערכים',en:'Flexibility with values'}},
+   explanations:{avoid:'עקשות מזיקה היא התעקשות על דרכנו גם כשהיא פוגעת. זה מוביל לנזק, לקונפליקטים, ולאובדן הזדמנויות.',do:'ישרות ונכונות לשנות כיוון הן עמידה בערכים תוך גמישות. זה כולל הבנה מתי לעמוד על שלנו ומתי כדאי לשנות דרך.'}},
+  {day:30,avoid:{he:'פריצות',en:'Immodesty'},do:{he:'צניעות',en:'Modesty'},
+   examples:{avoid:{he:'חוסר צניעות',en:'Lack of modesty'},
+            do:{he:'שמירה על גבולות',en:'Keeping boundaries'}},
+   explanations:{avoid:'פריצות היא התנהגות חסרת צניעות וחשיפה מיותרת. זו התנהגות או לבוש שאינם שומרים על כבוד עצמי וגבולות הולמים.',do:'צניעות היא שמירה על גבולות אישיים הולמים. זה כולל לבוש מכבד, התנהגות צנועה, ושמירה על כבוד עצמי ואחרים.'}},
+  {day:31,avoid:{he:'פטפוט',en:'Chatter'},do:{he:'שתיקה, תועלת בדיבורים',en:'Silence'},
+   examples:{avoid:{he:'דיבור ריק',en:'Empty talk'},
+            do:{he:'דיבור מועיל',en:'Useful speech'}},
+   explanations:{avoid:'פטפוט הוא דיבור מיותר וחסר תועלת. זה בזבוז זמן, מילוי הזמן בדיבורים ריקים, ואי הקשבה לאחרים.',do:'שתיקה ודיבור מועיל הם דיבור רק כשיש מה להגיד. זה כולל הקשבה פעילה, חשיבה לפני דיבור, ובחירת מילים בקפידה.'}},
+  {day:32,avoid:{he:'פזרנות, בזבוז',en:'Wastefulness'},do:{he:'חסכנות, חישוב',en:'Frugality'},
+   examples:{avoid:{he:'בזבוז משאבים',en:'Wasting resources'},
+            do:{he:'שימוש חכם',en:'Wise use'}},
+   explanations:{avoid:'פזרנות ובזבוז הם שימוש לא אחראי במשאבים. זה כולל הוצאות מיותרות, חוסר חיסכון, ואי תכנון כלכלי.',do:'חסכנות וחישוב הם שימוש חכם במשאבים. זה כולל תכנון כלכלי, חיסכון למען העתיד, והוצאה מושכלת.'}},
+  {day:33,avoid:{he:'פזיזות',en:'Recklessness'},do:{he:'מתינות',en:'Deliberation'},
+   examples:{avoid:{he:'החלטה מהירה מדי',en:'Too quick decision'},
+            do:{he:'חשיבה מעמיקה',en:'Deep thought'}},
+   explanations:{avoid:'פזיזות היא פעולה מהירה מדי ללא מחשבה. זו החלטה אימפולסיבית שעלולה להזיק ושלא שוקלת השלכות.',do:'מתינות היא לקיחת זמן לחשיבה לפני פעולה. זה כולל שקילת אפשרויות, התייעצות, והחלטה מושכלת.'}},
+  {day:34,avoid:{he:'פחד, מורך לב',en:'Fear'},do:{he:'אומץ, גבורה',en:'Courage'},
+   examples:{avoid:{he:'חשש מפעולה',en:'Fear of action'},
+            do:{he:'פעולה למרות פחד',en:'Acting despite fear'}},
+   explanations:{avoid:'פחד ומורך לב הם חששות מוגזמים המונעים מאיתנו לפעול. זה מגביל אותנו, מונע התקדמות, וגורם לוויתור על חלומות.',do:'אומץ וגבורה הם היכולת להתמודד עם פחדים. זה כולל עמידה על שלנו, פעולה למרות הפחד, ועשיית הנכון גם כשקשה.'}},
+  {day:35,avoid:{he:'פנים זועמות ויבשות',en:'Angry Face'},do:{he:'סבר פנים יפות',en:'Pleasant Face'},
+   examples:{avoid:{he:'פנים כועסות',en:'Angry face'},
+            do:{he:'חיוך נעים',en:'Pleasant smile'}},
+   explanations:{avoid:'פנים זועמות ויבשות הן הבעות פנים כועסות או קרות. זה יוצר אווירה שלילית, מרחיק אנשים, ומשדר חוסר נעימות.',do:'סבר פנים יפות הן חיוך והבעת פנים נעימה. זה יוצר אווירה חיובית, מזמין קרבה, ומשפר יחסים.'}},
+  {day:36,avoid:{he:'קנאה, צרות עין',en:'Envy'},do:{he:'נחת מהצלחת הזולת',en:'Joy in Others'},
+   examples:{avoid:{he:'קנאה בהצלחת אחרים',en:'Envying others\' success'},
+            do:{he:'שמחה עם אחרים',en:'Rejoicing with others'}},
+   explanations:{avoid:'קנאה וצרות עין הן רצון למה שיש לאחרים ואי שמחה בהצלחתם. זה יוצר מרירות, פוגע ביחסים, ומונע מאיתנו לשמוח.',do:'נחת מהצלחת הזולת היא שמחה עם אחרים בהצלחותיהם. זה כולל עידוד, חגיגה איתם, והכרה בכך שהצלחתם לא גורעת משלנו.'}},
+  {day:37,avoid:{he:'קלות דעת, ליצנות',en:'Frivolity'},do:{he:'כובד ראש, רצינות',en:'Seriousness'},
+   examples:{avoid:{he:'התנהגות לא רצינית',en:'Non-serious behavior'},
+            do:{he:'התנהגות הולמת',en:'Appropriate behavior'}},
+   explanations:{avoid:'קלות דעת וליצנות הן התייחסות לא רצינית לדברים חשובים. זה כולל בדיחות במקום לא הולם וחוסר כובד ראש כשנדרש.',do:'כובד ראש ורצינות הם התייחסות הולמת למצבים חשובים. זה כולל מתינות, התנהגות רצינית כשצריך, והבנה מתי הולם להקל ראש.'}},
+  {day:38,avoid:{he:'קמצנות',en:'Stinginess'},do:{he:'נדיבות',en:'Generosity'},
+   examples:{avoid:{he:'סירוב לעזור',en:'Refusing to help'},
+            do:{he:'נתינה בשמחה',en:'Giving happily'}},
+   explanations:{avoid:'קמצנות היא חוסר נדיבות וסירוב לעזור למרות היכולת. זה פוגע באחרים, מרחיק אנשים, ומשקף אנוכיות.',do:'נדיבות היא נתינה בשמחה מכל הלב. זה כולל עזרה לאחרים, שיתוף במה שיש לנו, ונתינה ללא ציפייה לתמורה.'}},
+  {day:39,avoid:{he:'שקר',en:'Lies'},do:{he:'אמת',en:'Truth'},
+   examples:{avoid:{he:'אמירת דברים לא נכונים',en:'Saying untrue things'},
+            do:{he:'דיבור האמת תמיד',en:'Always speaking truth'}},
+   explanations:{avoid:'שקר הוא אמירת דברים לא נכונים במכוון. זה הורס אמון, פוגע באמינות, ויוצר מציאות כוזבת.',do:'אמת היא דיבור האמת תמיד. זה כולל יושר, שקיפות, ואמירת האמת גם כשזה לא נוח.'}},
+  {day:40,avoid:{he:'שנאה',en:'Hatred'},do:{he:'אהבת הבריות',en:'Love'},
+   examples:{avoid:{he:'רגשות שליליים כלפי אחרים',en:'Negative feelings toward others'},
+            do:{he:'אהבה וכבוד לכולם',en:'Love and respect for all'}},
+   explanations:{avoid:'שנאה היא רגש שלילי עמוק כלפי אחר ורצון לרעתו. זה שורף מבפנים, הורס יחסים, ויוצר אווירה של איבה.',do:'אהבת הבריות היא אהבה וכבוד לכל בני האדם. זה כולל ראיית הטוב בכולם, חיפוש קרבה, והתייחסות בחום.'}},
+  {day:41,avoid:{he:'תאוה',en:'Lust'},do:{he:'לב טהור',en:'Pure Heart'},
+   examples:{avoid:{he:'רצונות בלתי מרוסנים',en:'Uncontrolled desires'},
+            do:{he:'שליטה עצמית',en:'Self-control'}},
+   explanations:{avoid:'תאווה היא רצון בלתי מרוסן למימוש תשוקות גופניות. זו חוסר שליטה עצמית הפוגעת בטוהר הנפש ובערכים.',do:'לב טהור פירושו שליטה ברצונות ומחשבות נקיות. זה כולל התנהגות מותאמת לערכים, שמירה על טוהר, והתנהגות מכובדת.'}},
+  {day:42,avoid:{he:'תחרות, רדיפת מותרות',en:'Competition'},do:{he:'הסתפקות',en:'Satisfaction'},
+   examples:{avoid:{he:'רדיפה אחר יותר',en:'Chasing more'},
+            do:{he:'שביעות רצון מהמצב',en:'Satisfaction with situation'}},
+   explanations:{avoid:'תחרות ורדיפת מותרות הן רצון תמידי ליותר והשוואה לאחרים. זה יוצר חוסר סיפוק, קנאה, ומרוץ אינסופי.',do:'הסתפקות היא שביעות רצון ממה שיש. זה כולל הערכת המצב, הימנעות מהשוואות, ושמחה במה שניתן לנו.'}}
+];
+
+const translations = {
+    he: {
+        title: 'תיקון המידות',
+        subtitle: 'אלה מסעי בני ישראל',
+        hebrewDate: 'תאריך עברי',
+        gregorianDate: 'תאריך לועזי',
+        dark: 'כהה',
+        light: 'בהיר',
+        journey: '🎯 מסע',
+        community: '👥 קהילה',
+        contacts: '📞 אנשי קשר',
+        family: '❤️ משפחה',
+        insights: '📈 תובנות',
+        history: '📖 הסטוריה',
+        day: 'יום',
+        completed: 'הושלמו',
+        streak: 'רצף',
+        progress: 'התקדמות',
+        avoid: 'סור מרע',
+        doGood: 'ועשה טוב',
+        reflectionPrompt: 'האם הייתה מידה כזו היום? אם כן, כיצד פעלת?',
+        save: 'שמור והמשך',
+        addFamily: '➕ הוסף בן משפחה',
+        addContact: '➕ הוסף איש קשר'
+    },
+    en: {
+        title: 'Character Development',
+        subtitle: 'A 42-Day Journey',
+        hebrewDate: 'Hebrew Date',
+        gregorianDate: 'Date',
+        dark: 'Dark',
+        light: 'Light',
+        journey: '🎯 Journey',
+        community: '👥 Community',
+        contacts: '📞 Contacts',
+        family: '❤️ Family',
+        insights: '📈 Insights',
+        history: '📖 History',
+        day: 'Day',
+        completed: 'Completed',
+        streak: 'Streak',
+        progress: 'Progress',
+        avoid: 'Avoid',
+        doGood: 'Do Good',
+        reflectionPrompt: 'Did you experience this trait today? If so, how did you act?',
+        save: 'Save and Continue',
+        addFamily: '➕ Add Family Member',
+        addContact: '➕ Add Contact'
+    }
+};
+
+let state = {
+    currentDay: 1,
+    completedDays: [],
+    avoidReflections: {},
+    doReflections: {},
+    familyMembers: [],
+    contacts: [],
+    challenges: [
+        {id: 1, name: 'אתגר שמירת הלשון - 7 ימים', joined: false, participants: 0},
+        {id: 2, name: 'מסע תיקון המידות המלא - 42 יום', joined: false, participants: 0},
+        {id: 3, name: 'אתגר הכרת הטובה - 14 יום', joined: false, participants: 0},
+        {id: 4, name: 'אתגר סבלנות - 21 יום', joined: false, participants: 0}
+    ],
+    journeyHistory: [],
+    language: 'he',
+    isDarkMode: false,
+    insightsNotes: '',
+    changesNotes: '',
+    contactsEditMode: false,
+    contactsDeleteMode: false,
+    familyEditMode: false,
+    familyDeleteMode: false
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadFromStorage();
+    updateDates();
+    renderProgressMap();
+    updateDisplay();
+    updateInsights();
+    
+    // Set up Gregorian date picker change handler
+    document.getElementById('gregorian-date-picker').addEventListener('change', (e) => {
+        const selectedDate = new Date(e.target.value);
+        updateHebrewDateFromGregorian(selectedDate);
+    });
+});
+
+function updateDates() {
+    const now = new Date();
+    const dateString = now.toISOString().split('T')[0];
+    const gregInput = document.getElementById('gregorian-date-picker');
+    if (gregInput) {
+        gregInput.value = dateString;
+    }
+    updateHebrewDateFromGregorian(now);
+}
+
+function updateHebrewDateFromGregorian(date) {
+    // Hebrew date calculation (simplified)
+    const hebrewMonths = ['תשרי', 'חשון', 'כסלו', 'טבת', 'שבט', 'אדר', 'ניסן', 'אייר', 'סיון', 'תמוז', 'אב', 'אלול'];
+    const month = hebrewMonths[date.getMonth() % 12];
+    const day = date.getDate();
+    const hebrewDay = convertToHebrew(day);
+    document.getElementById('hebrew-date-picker').value = `${hebrewDay} ב${month}`;
+}
+
+function editHebrewDate() {
+    const input = document.getElementById('hebrew-date-picker');
+    const currentValue = input.value;
+    
+    // Make it editable
+    input.removeAttribute('readonly');
+    input.focus();
+    input.select();
+    
+    // When user finishes editing (blur or enter)
+    const finishEdit = () => {
+        if (input.value.trim() === '') {
+            input.value = currentValue; // Restore if empty
+        }
+        input.blur();
+    };
+    
+    input.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            finishEdit();
+        }
+    };
+    
+    input.onblur = () => {
+        // Save the custom date
+        saveToStorage();
+    };
+}
+
+function convertToHebrew(num) {
+    const ones = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
+    const tens = ['', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ'];
+    
+    if (num < 10) return ones[num] + '׳';
+    if (num === 15) return 'ט״ו';
+    if (num === 16) return 'ט״ז';
+    
+    const ten = Math.floor(num / 10);
+    const one = num % 10;
+    return tens[ten] + (one > 0 ? '״' + ones[one] : '׳');
+}
+
+function loadFromStorage() {
+    const saved = localStorage.getItem('tikkunMiddot');
+    if (saved) {
+        state = {...state, ...JSON.parse(saved)};
+    }
+}
+
+function saveToStorage() {
+    localStorage.setItem('tikkunMiddot', JSON.stringify(state));
+}
+
+function renderProgressMap() {
+    const map = document.getElementById('progress-map');
+    map.innerHTML = '';
+    MIDDOT_PAIRS.forEach(pair => {
+        const circle = document.createElement('div');
+        circle.className = 'day-circle';
+        if (state.completedDays.includes(pair.day)) circle.classList.add('completed');
+        if (pair.day === state.currentDay) circle.classList.add('current');
+        
+        // Add click handler to navigate to day
+        circle.onclick = () => {
+            state.currentDay = pair.day;
+            updateDisplay();
+            renderProgressMap();
+            saveToStorage();
+        };
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.innerHTML = `
+            <div style="color: #ffb3c1; font-size: 0.75em; font-weight: 600; margin-bottom: 5px;">סור מרע:</div>
+            <div style="font-weight: 600; margin-bottom: 8px; color: #2d1b2e;">${pair.avoid.he}</div>
+            <div style="color: #98d8c8; font-size: 0.75em; font-weight: 600; margin-bottom: 5px;">ועשה טוב:</div>
+            <div style="font-weight: 600; color: #2d1b2e;">${pair.do.he}</div>
+        `;
+        
+        circle.innerHTML = state.completedDays.includes(pair.day) ? '✓' : pair.day;
+        circle.appendChild(tooltip);
+        map.appendChild(circle);
+    });
+}
+
+function updateDisplay() {
+    const pair = MIDDOT_PAIRS[state.currentDay - 1];
+    const lang = state.language;
+    
+    document.getElementById('current-day-title').textContent = state.currentDay;
+    document.getElementById('avoid-text').textContent = pair.avoid[lang];
+    document.getElementById('do-text').textContent = pair.do[lang];
+    
+    // Update explanations (will be empty until you add them)
+    const avoidExpl = document.getElementById('avoid-explanation');
+    const doExpl = document.getElementById('do-explanation');
+    
+    if (pair.explanations) {
+        avoidExpl.textContent = pair.explanations.avoid || '';
+        doExpl.textContent = pair.explanations.do || '';
+    } else {
+        avoidExpl.textContent = '';
+        doExpl.textContent = '';
+    }
+    
+    document.getElementById('completed-stat').textContent = state.completedDays.length;
+    document.getElementById('streak-stat').textContent = calculateStreak();
+    document.getElementById('percent-stat').textContent = Math.round((state.completedDays.length / 42) * 100) + '%';
+    
+    // Load saved reflections for current day (if they exist)
+    const avoidReflection = state.avoidReflections[state.currentDay] || '';
+    const doReflection = state.doReflections[state.currentDay] || '';
+    document.getElementById('avoid-reflection').value = avoidReflection;
+    document.getElementById('do-reflection').value = doReflection;
+    
+    // Load insights notes if on insights tab
+    if (document.getElementById('insights-notes')) {
+        document.getElementById('insights-notes').value = state.insightsNotes || '';
+        document.getElementById('changes-notes').value = state.changesNotes || '';
+    }
+}
+
+function calculateStreak() {
+    if (state.completedDays.length === 0) return 0;
+    
+    const sorted = [...state.completedDays].sort((a, b) => b - a);
+    let streak = 1;
+    
+    for (let i = 0; i < sorted.length - 1; i++) {
+        if (sorted[i] - sorted[i + 1] === 1) {
+            streak++;
+        } else {
+            break;
+        }
+    }
+    
+    return streak;
+}
+
+function completeDay() {
+    const avoidReflection = document.getElementById('avoid-reflection').value;
+    const doReflection = document.getElementById('do-reflection').value;
+    
+    // ALWAYS save reflections for current day
+    state.avoidReflections[state.currentDay] = avoidReflection;
+    state.doReflections[state.currentDay] = doReflection;
+    saveToStorage();
+    
+    if (!state.completedDays.includes(state.currentDay)) {
+        state.completedDays.push(state.currentDay);
+        
+        if (state.currentDay === 42) {
+            // Special celebration for completing all 42 days!
+            showCompletionCelebration();
+        } else {
+            state.currentDay++;
+            updateDisplay();
+            renderProgressMap();
+        }
+        saveToStorage();
+        updateInsights();
+    } else {
+        // Just update display to show changes were saved
+        renderProgressMap(); // Make sure to update the map
+        alert('השינויים נשמרו!');
+    }
+}
+
+function resetDay() {
+    if (state.currentDay === 42) {
+        // Day 42 - Reset EVERYTHING!
+        // Clear ALL data - exactly like I did when clearing everything
+        localStorage.removeItem('tikkunMiddot');
+        
+        // Reload the page - everything will be reset
+        location.reload();
+    } else {
+        // Days 1-41 - Reset only current day
+        // Clear reflections for current day
+        state.avoidReflections[state.currentDay] = '';
+        state.doReflections[state.currentDay] = '';
+        
+        // Remove from completed days
+        state.completedDays = state.completedDays.filter(day => day !== state.currentDay);
+        
+        // Save and reload
+        localStorage.setItem('tikkunMiddot', JSON.stringify(state));
+        location.reload();
+    }
+}
+
+function showCompletionCelebration() {
+    // Create celebration modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 400px;
+        position: relative;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    `;
+    
+    content.innerHTML = `
+        <h2 style="color: #f48fb1; font-size: 2.5em; margin-bottom: 20px; font-family: 'Varela Round', sans-serif;">🎉 כל הכבוד! 🎉</h2>
+        <p style="font-size: 1.5em; color: #2d1b2e; font-weight: 600; margin-bottom: 30px;">תיקנת את המידות!</p>
+        <button onclick="this.closest('.celebration-modal').remove()" style="background: #98d8c8; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-size: 1.1em; cursor: pointer; font-weight: 600; font-family: 'Heebo', sans-serif;">סגור</button>
+    `;
+    
+    modal.className = 'celebration-modal';
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Create confetti
+    createConfetti();
+    
+    // Create fireworks
+    createFireworks();
+    
+    // Remove after 10 seconds
+    setTimeout(() => {
+        if (modal.parentNode) {
+            modal.remove();
+        }
+    }, 10000);
+}
+
+function createConfetti() {
+    const colors = ['#ffb3c1', '#98d8c8', '#d4af37', '#f48fb1', '#ffe4e9'];
+    
+    for (let i = 0; i < 100; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = '-10px';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }, i * 30);
+    }
+}
+
+function createFireworks() {
+    const colors = ['#ffb3c1', '#98d8c8', '#d4af37', '#f48fb1', '#ffe4e9'];
+    
+    for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+            const x = 20 + Math.random() * 60;
+            const y = 20 + Math.random() * 60;
+            
+            for (let j = 0; j < 30; j++) {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.left = x + '%';
+                firework.style.top = y + '%';
+                firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                const angle = (j / 30) * 2 * Math.PI;
+                const distance = 100 + Math.random() * 100;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                firework.style.setProperty('--x', dx + 'px');
+                firework.style.setProperty('--y', dy + 'px');
+                
+                document.body.appendChild(firework);
+                
+                setTimeout(() => firework.remove(), 1000);
+            }
+        }, i * 400);
+    }
+}
+
+function previousDay() {
+    if (state.currentDay > 1) {
+        state.currentDay--;
+        updateDisplay();
+        renderProgressMap();
+        saveToStorage();
+    }
+}
+
+function nextDay() {
+    if (state.currentDay < 42) {
+        state.currentDay++;
+        updateDisplay();
+        renderProgressMap();
+        saveToStorage();
+    }
+}
+
+function startOver() {
+    if (confirm('האם אתה בטוח שברצונך להתחיל מחדש?')) {
+        state.currentDay = 1;
+        state.completedDays = [];
+        state.avoidReflections = {};
+        state.doReflections = {};
+        closeModal('celebration-modal');
+        showTab('journey');
+        updateDisplay();
+        renderProgressMap();
+        saveToStorage();
+    }
+}
+
+function viewSummary() {
+    alert(`סיימת ${state.completedDays.length} ימים מתוך 42!\nאחוז השלמה: ${Math.round((state.completedDays.length / 42) * 100)}%\nרצף נוכחי: ${calculateStreak()} ימים`);
+}
+
+function saveToHistory() {
+    const journey = {
+        id: Date.now(),
+        completedDays: [...state.completedDays],
+        date: new Date().toLocaleDateString('he-IL'),
+        hebrewDate: document.getElementById('hebrew-date').textContent,
+        percentage: Math.round((state.completedDays.length / 42) * 100),
+        reflections: {...state.dailyReflections}
+    };
+    state.journeyHistory.push(journey);
+    renderHistory();
+    saveToStorage();
+    alert('המסע נשמר להסטוריה!');
+}
+
+function shareJourney() {
+    const text = `סיימתי את מסע תיקון המידות! ${state.completedDays.length}/42 ימים 🎉`;
+    if (navigator.share) {
+        navigator.share({
+            title: 'תיקון המידות',
+            text: text
+        });
+    } else {
+        navigator.clipboard.writeText(text);
+        alert('הטקסט הועתק ללוח!');
+    }
+}
+
+let selectedVisualDay = null;
+
+function renderVisualMap() {
+    const container = document.getElementById('visual-spiral');
+    container.innerHTML = '';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('viewBox', '0 0 600 600');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svg.style.maxWidth = '600px';
+    svg.style.maxHeight = '600px';
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    let pathData = '';
+    
+    const center = 300;
+    const maxRadius = 250;
+    const minRadius = 40;
+    const turns = 3.5;
+    const points = 42;
+    
+    // Create very smooth spiral with many interpolation points
+    const spiralSteps = 200; // Many points for smooth curve
+    for (let i = 0; i <= spiralSteps; i++) {
+        const t = i / spiralSteps;
+        const angle = t * turns * 2 * Math.PI;
+        const radius = minRadius + t * (maxRadius - minRadius);
+        const x = center + radius * Math.cos(angle - Math.PI / 2);
+        const y = center + radius * Math.sin(angle - Math.PI / 2);
+        
+        if (i === 0) {
+            pathData = `M ${x} ${y}`;
+        } else {
+            pathData += ` L ${x} ${y}`;
+        }
+    }
+    
+    path.setAttribute('d', pathData);
+    path.setAttribute('stroke', '#ffe4e9');
+    path.setAttribute('stroke-width', '3');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-dasharray', '5,5');
+    svg.appendChild(path);
+    
+    MIDDOT_PAIRS.forEach((pair, index) => {
+        const angle = (index / points) * turns * 2 * Math.PI;
+        const radius = minRadius + (index / points) * (maxRadius - minRadius);
+        const x = center + radius * Math.cos(angle - Math.PI / 2);
+        const y = center + radius * Math.sin(angle - Math.PI / 2);
+        
+        const isCompleted = state.completedDays.includes(pair.day);
+        const isCurrent = pair.day === state.currentDay;
+        
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', isCurrent ? '18' : '12');
+        
+        if (isCurrent) {
+            circle.setAttribute('fill', '#ffd6e0');
+            circle.setAttribute('stroke', '#f48fb1');
+            circle.setAttribute('stroke-width', '3');
+            
+            const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+            animate.setAttribute('attributeName', 'r');
+            animate.setAttribute('values', '18;22;18');
+            animate.setAttribute('dur', '2s');
+            animate.setAttribute('repeatCount', 'indefinite');
+            circle.appendChild(animate);
+        } else if (isCompleted) {
+            circle.setAttribute('fill', '#98d8c8');
+            circle.setAttribute('stroke', '#6fb8a8');
+            circle.setAttribute('stroke-width', '2');
+        } else {
+            circle.setAttribute('fill', '#f5f5f5');
+            circle.setAttribute('stroke', '#ddd');
+            circle.setAttribute('stroke-width', '2');
+        }
+        
+        circle.style.cursor = 'pointer';
+        
+        // Create simple tooltip element
+        const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tooltip.setAttribute('x', x);
+        tooltip.setAttribute('y', y - 25);
+        tooltip.setAttribute('text-anchor', 'middle');
+        tooltip.setAttribute('font-size', '14');
+        tooltip.setAttribute('font-weight', '600');
+        tooltip.setAttribute('fill', '#f48fb1');
+        tooltip.setAttribute('pointer-events', 'none');
+        tooltip.style.opacity = '0';
+        tooltip.style.transition = 'opacity 0.2s';
+        tooltip.textContent = pair.do.he;  // Just the middah name
+        svg.appendChild(tooltip);
+        
+        circle.addEventListener('mouseenter', function() {
+            this.setAttribute('r', isCurrent ? '22' : '16');
+            this.style.filter = 'drop-shadow(0 0 8px rgba(244, 143, 177, 0.6))';
+            tooltip.style.opacity = '1';
+            showVisualDayDetails(pair.day);
+        });
+        
+        circle.addEventListener('mouseleave', function() {
+            this.setAttribute('r', isCurrent ? '18' : '12');
+            this.style.filter = 'none';
+            tooltip.style.opacity = '0';
+        });
+        
+        circle.addEventListener('click', () => {
+            showVisualDayDetails(pair.day);
+        });
+        
+        svg.appendChild(circle);
+        
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + 4);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', isCurrent ? '12' : '10');
+        text.setAttribute('font-weight', isCurrent ? '700' : '600');
+        text.setAttribute('fill', isCurrent || isCompleted ? 'white' : '#999');
+        text.setAttribute('pointer-events', 'none');
+        text.textContent = isCurrent ? '⭐' : pair.day;
+        svg.appendChild(text);
+        
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `יום ${pair.day}: ${pair.avoid.he} / ${pair.do.he}`;
+        circle.appendChild(title);
+    });
+    
+    container.appendChild(svg);
+}
+
+function showVisualDayDetails(day) {
+    selectedVisualDay = day;
+    const pair = MIDDOT_PAIRS.find(p => p.day === day);
+    if (!pair) return;
+    
+    document.getElementById('visual-day-title').textContent = `יום ${day}`;
+    document.getElementById('visual-avoid-text').textContent = pair.avoid.he;
+    document.getElementById('visual-do-text').textContent = pair.do.he;
+    
+    if (pair.explanations) {
+        document.getElementById('visual-avoid-explanation').textContent = pair.explanations.avoid;
+        document.getElementById('visual-do-explanation').textContent = pair.explanations.do;
+    } else {
+        document.getElementById('visual-avoid-explanation').textContent = '';
+        document.getElementById('visual-do-explanation').textContent = '';
+    }
+    
+    document.getElementById('visual-details').style.display = 'block';
+}
+
+function goToDay(day) {
+    state.currentDay = day;
+    saveToStorage();
+    showTab('journey');
+    updateDisplay();
+    renderProgressMap();
+}
+
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    
+    if (state.journeyHistory.length === 0) {
+        list.innerHTML = '<div class="empty-state">אין היסטוריה עדיין</div>';
+        return;
+    }
+    
+    list.innerHTML = state.journeyHistory.map(j => `
+        <div class="history-item">
+            <h3 style="color: #98d8c8; margin-bottom: 10px;">מסע מתאריך ${j.date}</h3>
+            <p>תאריך עברי: ${j.hebrewDate}</p>
+            <p>הושלמו: ${j.completedDays.length}/42 ימים</p>
+            <p>אחוז השלמה: ${j.percentage}%</p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${j.percentage}%"></div>
+            </div>
+            <button class="share-btn" onclick="shareHistoryItem(${j.id})">שתף מסע זה</button>
+        </div>
+    `).join('');
+}
+
+function shareHistoryItem(id) {
+    const journey = state.journeyHistory.find(j => j.id === id);
+    if (!journey) return;
+    
+    const text = `השלמתי ${journey.completedDays.length}/42 ימים במסע תיקון המידות! (${journey.percentage}%)`;
+    if (navigator.share) {
+        navigator.share({ title: 'תיקון המידות', text: text });
+    } else {
+        navigator.clipboard.writeText(text);
+        alert('הטקסט הועתק ללוח!');
+    }
+}
+
+function openAddFamilyModal() {
+    openModal('add-family-modal');
+}
+
+function addFamilyMember() {
+    const name = document.getElementById('family-name').value;
+    const phone = document.getElementById('family-phone').value;
+    const day = parseInt(document.getElementById('family-day').value);
+    const permission = document.getElementById('family-permission').checked;
+    
+    if (name) {
+        state.familyMembers.push({
+            id: Date.now(),
+            name,
+            phone,
+            day,
+            completedDays: [],
+            sharePermission: permission
+        });
+        renderFamilyList();
+        saveToStorage();
+        closeModal('add-family-modal');
+        document.getElementById('family-name').value = '';
+        document.getElementById('family-phone').value = '';
+        document.getElementById('family-day').value = '0';
+        document.getElementById('family-permission').checked = false;
+    }
+}
+
+function renderFamilyList() {
+    const list = document.getElementById('family-list');
+    if (!list) return;
+    
+    if (state.familyMembers.length === 0) {
+        list.innerHTML = '<div class="empty-state">לא הוספת בני משפחה עדיין</div>';
+        return;
+    }
+    
+    list.innerHTML = state.familyMembers.map((member, i) => {
+        const phone = member.phone || '';
+        const isDisabled = !member.phone;
+        return `
+        <div class="family-card" style="position: relative; ${state.familyEditMode || state.familyDeleteMode ? 'padding-right: 50px;' : ''}">
+            ${state.familyEditMode || state.familyDeleteMode ? `
+                <input type="checkbox" class="family-checkbox" data-id="${member.id}" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; cursor: pointer;">
+            ` : ''}
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <h3 style="margin: 0;">${member.name}</h3>
+                ${!state.familyEditMode && !state.familyDeleteMode ? `
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="window.editFam(${member.id})" style="background: #98d8c8; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: white; font-size: 1.1em; font-weight: bold;" title="ערוך">✎</button>
+                    <button onclick="window.delFam(${member.id})" style="background: #ffb3c1; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: white; font-size: 1.2em; font-weight: bold;" title="מחק">×</button>
+                </div>
+                ` : ''}
+            </div>
+            ${member.phone ? `<p>📱 ${member.phone}</p>` : ''}
+            <p>יום: ${member.day}/42</p>
+            <p>הושלמו: ${member.completedDays.length} ימים</p>
+            <p>שיתוף: ${member.sharePermission ? '✓ מופעל' : '✗ כבוי'}</p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${(member.completedDays.length / 42) * 100}%"></div>
+            </div>
+            ${!state.familyEditMode && !state.familyDeleteMode ? `
+            <div style="display: flex; gap: 15px; margin-top: 10px; justify-content: center; align-items: center;">
+                <button onclick="window.waFam(${member.id})" title="שלח ב-WhatsApp" ${isDisabled ? 'disabled style="opacity: 0.3; cursor: not-allowed;"' : ''} style="background: transparent; color: #25D366; border: none; padding: 4px; cursor: pointer; font-size: 1.8em;">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="currentColor">
+                        <path d="M16 0C7.164 0 0 7.164 0 16c0 2.828.736 5.484 2.016 7.812L.096 30.912l7.264-1.888A15.878 15.878 0 0016 32c8.836 0 16-7.164 16-16S24.836 0 16 0zm8.124 22.876c-.344.964-1.716 1.768-2.804 2.008-.736.164-1.696.296-4.92-.996-4.124-1.648-6.788-5.808-6.988-6.076-.196-.268-1.596-2.124-1.596-4.056s1.008-2.876 1.368-3.268c.36-.392.784-.492 1.048-.492.264 0 .524.004.752.012.244.012.572-.092.896.684.328.788 1.12 2.732 1.22 2.932.1.2.164.432.032.7-.132.268-.196.432-.392.668-.196.236-.412.528-.588.708-.196.2-.4.416-.172.816.228.4.996 1.652 2.14 2.676 1.472 1.316 2.716 1.728 3.104 1.92.392.196.62.164.848-.096.228-.264.972-1.136 1.232-1.528.264-.392.524-.328.884-.196.36.132 2.288 1.08 2.68 1.276.392.196.652.296.752.46.1.164.1.944-.244 1.908z"/>
+                    </svg>
+                </button>
+                <button onclick="window.emFam(${member.id})" title="שלח באימייל" style="background: transparent; color: #EA4335; border: none; padding: 4px; cursor: pointer; font-size: 1.8em;">
+                    ✉️
+                </button>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    }).join('');
+    
+    // Show action button when in edit/delete mode
+    if (state.familyEditMode || state.familyDeleteMode) {
+        const actionBtn = document.createElement('button');
+        actionBtn.className = 'save-btn';
+        actionBtn.style.marginTop = '15px';
+        actionBtn.textContent = state.familyEditMode ? 'ערוך נבחרים' : 'מחק נבחרים';
+        actionBtn.style.background = state.familyEditMode ? '#98d8c8' : '#ffb3c1';
+        actionBtn.onclick = state.familyEditMode ? executeFamilyEdit : executeFamilyDelete;
+        list.appendChild(actionBtn);
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'save-btn';
+        cancelBtn.style.marginTop = '10px';
+        cancelBtn.style.background = '#8b7f8e';
+        cancelBtn.textContent = 'ביטול';
+        cancelBtn.onclick = () => {
+            state.familyEditMode = false;
+            state.familyDeleteMode = false;
+            renderFamilyList();
+        };
+        list.appendChild(cancelBtn);
+    }
+}
+
+// Global functions for family
+window.editFam = function(id) { editFamilyMember(id); };
+window.delFam = function(id) { deleteFamilyMember(id); };
+window.waFam = function(id) { shareFamilyWhatsApp(id); };
+window.emFam = function(id) { shareFamilyEmail(id); };
+
+function deleteFamilyMember(id) {
+    id = Number(id);
+    if (confirm('האם למחוק בן משפחה זה?')) {
+        state.familyMembers = state.familyMembers.filter(m => m.id !== id);
+        renderFamilyList();
+        saveToStorage();
+    }
+}
+
+function editFamilyMember(id) {
+    id = Number(id);
+    const member = state.familyMembers.find(m => m.id === id);
+    if (!member) return;
+    
+    const newName = prompt('שם:', member.name);
+    if (newName === null) return;
+    
+    const newPhone = prompt('טלפון:', member.phone || '');
+    if (newPhone === null) return;
+    
+    const newDay = prompt('יום נוכחי (0-42):', member.day);
+    if (newDay === null) return;
+    
+    if (newName) {
+        member.name = newName;
+        member.phone = newPhone;
+        member.day = parseInt(newDay) || 0;
+        renderFamilyList();
+        saveToStorage();
+    }
+}
+
+function openAddContactModal() {
+    openModal('add-contact-modal');
+}
+
+function addContact() {
+    const name = document.getElementById('contact-name').value;
+    const phone = document.getElementById('contact-phone').value;
+    
+    if (name && phone) {
+        state.contacts.push({
+            id: Date.now(),
+            name,
+            phone
+        });
+        renderContactsList();
+        saveToStorage();
+        closeModal('add-contact-modal');
+        document.getElementById('contact-name').value = '';
+        document.getElementById('contact-phone').value = '';
+    }
+}
+
+function renderContactsList() {
+    const list = document.getElementById('contacts-list');
+    if (!list) return;
+    
+    if (state.contacts.length === 0) {
+        list.innerHTML = '<div class="empty-state">לא הוספת אנשי קשר עדיין</div>';
+        return;
+    }
+    
+    list.innerHTML = state.contacts.map(contact => `
+        <div class="contact-card" style="position: relative; ${state.contactsEditMode || state.contactsDeleteMode ? 'padding-right: 50px;' : ''}">
+            ${state.contactsEditMode || state.contactsDeleteMode ? `
+                <input type="checkbox" class="contact-checkbox" data-id="${contact.id}" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; cursor: pointer;">
+            ` : ''}
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <h3 style="margin: 0;">${contact.name}</h3>
+                ${!state.contactsEditMode && !state.contactsDeleteMode ? `
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="window.editCon(${contact.id})" style="background: #98d8c8; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: white; font-size: 1.1em; font-weight: bold;" title="ערוך">✎</button>
+                    <button onclick="window.delCon(${contact.id})" style="background: #ffb3c1; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: white; font-size: 1.2em; font-weight: bold;" title="מחק">×</button>
+                </div>
+                ` : ''}
+            </div>
+            <p>📱 ${contact.phone}</p>
+            ${!state.contactsEditMode && !state.contactsDeleteMode ? `
+            <div style="display: flex; gap: 15px; margin-top: 10px; justify-content: center; align-items: center;">
+                <button onclick="window.waCon(${contact.id})" title="שלח ב-WhatsApp" style="background: transparent; color: #25D366; border: none; padding: 4px; cursor: pointer; font-size: 1.8em;">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="currentColor">
+                        <path d="M16 0C7.164 0 0 7.164 0 16c0 2.828.736 5.484 2.016 7.812L.096 30.912l7.264-1.888A15.878 15.878 0 0016 32c8.836 0 16-7.164 16-16S24.836 0 16 0zm8.124 22.876c-.344.964-1.716 1.768-2.804 2.008-.736.164-1.696.296-4.92-.996-4.124-1.648-6.788-5.808-6.988-6.076-.196-.268-1.596-2.124-1.596-4.056s1.008-2.876 1.368-3.268c.36-.392.784-.492 1.048-.492.264 0 .524.004.752.012.244.012.572-.092.896.684.328.788 1.12 2.732 1.22 2.932.1.2.164.432.032.7-.132.268-.196.432-.392.668-.196.236-.412.528-.588.708-.196.2-.4.416-.172.816.228.4.996 1.652 2.14 2.676 1.472 1.316 2.716 1.728 3.104 1.92.392.196.62.164.848-.096.228-.264.972-1.136 1.232-1.528.264-.392.524-.328.884-.196.36.132 2.288 1.08 2.68 1.276.392.196.652.296.752.46.1.164.1.944-.244 1.908z"/>
+                    </svg>
+                </button>
+                <button onclick="window.emCon(${contact.id})" title="שלח באימייל" style="background: transparent; color: #EA4335; border: none; padding: 4px; cursor: pointer; font-size: 1.8em;">
+                    ✉️
+                </button>
+            </div>
+            ` : ''}
+        </div>
+    `).join('');
+    
+    // Show action button when in edit/delete mode
+    if (state.contactsEditMode || state.contactsDeleteMode) {
+        const actionBtn = document.createElement('button');
+        actionBtn.className = 'save-btn';
+        actionBtn.style.marginTop = '15px';
+        actionBtn.textContent = state.contactsEditMode ? 'ערוך נבחרים' : 'מחק נבחרים';
+        actionBtn.style.background = state.contactsEditMode ? '#98d8c8' : '#ffb3c1';
+        actionBtn.onclick = state.contactsEditMode ? executeContactsEdit : executeContactsDelete;
+        list.appendChild(actionBtn);
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'save-btn';
+        cancelBtn.style.marginTop = '10px';
+        cancelBtn.style.background = '#8b7f8e';
+        cancelBtn.textContent = 'ביטול';
+        cancelBtn.onclick = () => {
+            state.contactsEditMode = false;
+            state.contactsDeleteMode = false;
+            renderContactsList();
+        };
+        list.appendChild(cancelBtn);
+    }
+}
+
+// Global functions for contacts
+window.editCon = function(id) { editContact(id); };
+window.delCon = function(id) { deleteContact(id); };
+window.waCon = function(id) { shareContactWhatsApp(id); };
+window.emCon = function(id) { shareContactEmail(id); };
+
+function editContact(id) {
+    id = Number(id);
+    const contact = state.contacts.find(c => c.id === id);
+    if (!contact) return;
+    
+    const newName = prompt('שם:', contact.name);
+    if (newName === null) return;
+    
+    const newPhone = prompt('טלפון:', contact.phone);
+    if (newPhone === null) return;
+    
+    if (newName && newPhone) {
+        contact.name = newName;
+        contact.phone = newPhone;
+        renderContactsList();
+        saveToStorage();
+    }
+}
+
+function deleteContact(id) {
+    id = Number(id);
+    if (confirm('האם למחוק איש קשר זה?')) {
+        state.contacts = state.contacts.filter(c => c.id !== id);
+        renderContactsList();
+        saveToStorage();
+    }
+}
+
+function shareViaWhatsApp(phone, type, name) {
+    let message = '';
+    const appUrl = window.location.href;
+    
+    if (type === 'family') {
+        message = `היי ${name}! אני עוקב/ת אחר המסע שלך בתיקון המידות. תמשיך/י כך! 💪 ${appUrl}`;
+    } else if (type === 'app') {
+        message = `היי! אני משתמש/ת באפליקציה מדהימה לתיקון מידות - מסע של 42 יום. בוא/י תצטרף/י! ${appUrl}`;
+    } else if (type === 'challenge') {
+        const challenge = state.challenges.find(c => c.id === name);
+        message = `היי! אני מזמין/ה אותך להצטרף לאתגר "${challenge.name}" באפליקציית תיקון המידות! ${appUrl}`;
+    }
+    
+    const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function shareFamilyWhatsApp(id) {
+    id = Number(id);
+    const member = state.familyMembers.find(m => m.id === id);
+    if (member && member.phone) {
+        shareViaWhatsApp(member.phone, 'family', member.name);
+    }
+}
+
+function shareFamilyEmail(id) {
+    id = Number(id);
+    const member = state.familyMembers.find(m => m.id === id);
+    if (member) {
+        shareViaEmail('family', member.name);
+    }
+}
+
+function shareContactWhatsApp(id) {
+    id = Number(id);
+    const contact = state.contacts.find(c => c.id === id);
+    if (contact) {
+        shareViaWhatsApp(contact.phone, 'app', '');
+    }
+}
+
+function shareContactEmail(id) {
+    id = Number(id);
+    const contact = state.contacts.find(c => c.id === id);
+    if (contact) {
+        shareViaEmail('app', contact.name);
+    }
+}
+
+function shareViaEmail(type, name) {
+    let subject = '';
+    let body = '';
+    const appUrl = window.location.href;
+    
+    if (type === 'family') {
+        subject = 'מעקב אחר המסע שלך בתיקון המידות';
+        body = `שלום ${name},\n\nאני עוקב/ת אחר המסע שלך בתיקון המידות ורוצה לעודד אותך להמשיך!\n\nקישור לאפליקציה: ${appUrl}\n\nבהצלחה!`;
+    } else if (type === 'app') {
+        subject = 'הזמנה לאפליקציית תיקון המידות';
+        body = `שלום ${name},\n\nאני משתמש/ת באפליקציה מדהימה לתיקון מידות - מסע של 42 יום.\nהיא באמת עוזרת לי לצמוח ולהשתפר!\n\nקישור לאפליקציה: ${appUrl}\n\nבוא/י תצטרף/י!`;
+    } else if (type === 'challenge') {
+        const challenge = state.challenges.find(c => c.id === parseInt(name));
+        if (challenge) {
+            subject = `הזמנה לאתגר: ${challenge.name}`;
+            body = `שלום,\n\nאני מזמין/ה אותך להצטרף לאתגר "${challenge.name}" באפליקציית תיקון המידות!\n\nקישור לאפליקציה: ${appUrl}\n\nנתראה באתגר!`;
+        }
+    }
+    
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+}
+
+function joinChallenge(id) {
+    const challenge = state.challenges.find(c => c.id === id);
+    if (!challenge) return;
+    
+    if (!challenge.joined) {
+        // Show share options when joining
+        const challengeName = challenge.name;
+        const shareMessage = `רוצה לשתף את האתגר "${challengeName}" עם חברים?`;
+        
+        if (confirm(shareMessage)) {
+            // Generate shareable link
+            const appUrl = window.location.href;
+            const shareText = `הצטרפתי לאתגר "${challengeName}" באפליקציית תיקון המידות! בואו להצטרף! ${appUrl}`;
+            
+            // Try native share first
+            if (navigator.share) {
+                navigator.share({
+                    title: 'תיקון המידות',
+                    text: shareText
+                });
+            } else {
+                // Copy to clipboard
+                navigator.clipboard.writeText(shareText);
+                alert('הקישור הועתק ללוח! אפשר להדביק ולשלוח לחברים');
+            }
+        }
+    }
+    
+    challenge.joined = !challenge.joined;
+    challenge.participants += challenge.joined ? 1 : -1;
+    
+    const card = document.getElementById(`challenge-${id}`);
+    if (challenge.joined) {
+        card.classList.add('joined');
+        card.querySelector('.save-btn').textContent = 'עזוב אתגר';
+    } else {
+        card.classList.remove('joined');
+        card.querySelector('.save-btn').textContent = 'הצטרף לאתגר';
+    }
+    
+    card.querySelector('.participant-count').textContent = challenge.participants;
+    saveToStorage();
+}
+
+function updateInsights() {
+    document.getElementById('total-days-insight').textContent = state.completedDays.length;
+    document.getElementById('current-streak-insight').textContent = calculateStreak();
+}
+
+function saveInsightsNotes() {
+    state.insightsNotes = document.getElementById('insights-notes').value;
+    state.changesNotes = document.getElementById('changes-notes').value;
+    saveToStorage();
+    alert('התובנות נשמרו!');
+}
+
+function toggleDarkMode() {
+    state.isDarkMode = !state.isDarkMode;
+    document.body.classList.toggle('dark-mode');
+    document.getElementById('theme-icon').textContent = state.isDarkMode ? '☀️' : '🌙';
+    document.getElementById('theme-text').textContent = state.isDarkMode ? 'בהיר' : 'כהה';
+    saveToStorage();
+}
+
+
+
+function showTab(tab) {
+    const tabs = ['journey', 'community', 'family', 'insights', 'visual', 'history'];
+    tabs.forEach(t => {
+        const el = document.getElementById(t + '-tab');
+        if (el) el.style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab').forEach((el, i) => {
+        el.classList.toggle('active', tabs[i] === tab);
+    });
+    
+    if (tab === 'history') renderHistory();
+    if (tab === 'family') renderFamilyList();
+    if (tab === 'community') renderContactsList();
+    if (tab === 'insights') updateInsights();
+    if (tab === 'visual') renderVisualMap();
+}
+
+function openModal(id) {
+    document.getElementById(id).classList.add('show');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+// Contacts edit/delete mode functions
+function toggleEditMode() {
+    state.contactsEditMode = !state.contactsEditMode;
+    state.contactsDeleteMode = false;
+    renderContactsList();
+}
+
+function toggleDeleteMode() {
+    state.contactsDeleteMode = !state.contactsDeleteMode;
+    state.contactsEditMode = false;
+    renderContactsList();
+}
+
+function executeContactsEdit() {
+    const checked = Array.from(document.querySelectorAll('.contact-checkbox:checked'));
+    if (checked.length === 0) {
+        alert('לא נבחרו אנשי קשר');
+        return;
+    }
+    
+    checked.forEach(checkbox => {
+        const id = Number(checkbox.dataset.id);
+        editContact(id);
+    });
+    
+    state.contactsEditMode = false;
+    renderContactsList();
+}
+
+function executeContactsDelete() {
+    const checked = Array.from(document.querySelectorAll('.contact-checkbox:checked'));
+    if (checked.length === 0) {
+        alert('לא נבחרו אנשי קשר');
+        return;
+    }
+    
+    if (confirm(`האם למחוק ${checked.length} אנשי קשר?`)) {
+        checked.forEach(checkbox => {
+            const id = Number(checkbox.dataset.id);
+            state.contacts = state.contacts.filter(c => c.id !== id);
+        });
+        saveToStorage();
+        state.contactsDeleteMode = false;
+        renderContactsList();
+        alert(`✓ נמחקו ${checked.length} אנשי קשר!`);
+    }
+}
+
+// Family edit/delete mode functions
+function toggleFamilyEditMode() {
+    state.familyEditMode = !state.familyEditMode;
+    state.familyDeleteMode = false;
+    renderFamilyList();
+}
+
+function toggleFamilyDeleteMode() {
+    state.familyDeleteMode = !state.familyDeleteMode;
+    state.familyEditMode = false;
+    renderFamilyList();
+}
+
+function executeFamilyEdit() {
+    const checked = Array.from(document.querySelectorAll('.family-checkbox:checked'));
+    if (checked.length === 0) {
+        alert('לא נבחרו בני משפחה');
+        return;
+    }
+    
+    checked.forEach(checkbox => {
+        const id = Number(checkbox.dataset.id);
+        editFamilyMember(id);
+    });
+    
+    state.familyEditMode = false;
+    renderFamilyList();
+}
+
+function executeFamilyDelete() {
+    const checked = Array.from(document.querySelectorAll('.family-checkbox:checked'));
+    if (checked.length === 0) {
+        alert('לא נבחרו בני משפחה');
+        return;
+    }
+    
+    if (confirm(`האם למחוק ${checked.length} בני משפחה?`)) {
+        checked.forEach(checkbox => {
+            const id = Number(checkbox.dataset.id);
+            state.familyMembers = state.familyMembers.filter(m => m.id !== id);
+        });
+        saveToStorage();
+        state.familyDeleteMode = false;
+        renderFamilyList();
+        alert(`✓ נמחקו ${checked.length} בני משפחה!`);
+    }
+}
+
+function clearAllFamily() {
+    const count = state.familyMembers.length;
+    if (count === 0) {
+        alert('אין בני משפחה למחוק');
+        return;
+    }
+    
+    if (confirm(`האם למחוק את כל ${count} בני המשפחה?`)) {
+        state.familyMembers = [];
+        renderFamilyList();
+        saveToStorage();
+        alert(`✓ נמחקו ${count} בני משפחה בהצלחה!`);
+    }
+}
+
+function clearAllContacts() {
+    const count = state.contacts.length;
+    if (count === 0) {
+        alert('אין אנשי קשר למחוק');
+        return;
+    }
+    
+    if (confirm(`האם למחוק את כל ${count} אנשי הקשר?`)) {
+        state.contacts = [];
+        renderContactsList();
+        saveToStorage();
+        alert(`✓ נמחקו ${count} אנשי קשר בהצלחה!`);
+    }
+}
+    </script>
+</body>
+</html>
